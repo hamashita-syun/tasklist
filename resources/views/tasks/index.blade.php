@@ -28,6 +28,6 @@
     @endif
 
     {{-- メッセージ作成ページへのリンク --}}
-    <a class="btn btn-primary" href="{{ route('messages.create') }}">新規メッセージの投稿</a>
+    <a class="btn btn-primary" href="{{ route('tasks.create') }}">新規タスクの投稿</a>
 
 @endsection
