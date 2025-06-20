@@ -9,18 +9,23 @@ class TasksController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        // メッセージ一覧を取得
-        $tasks = Task::all();         // 追加
 
-        // メッセージ一覧ビューでそれを表示
-        return view('tasks.index', [     // 追加
-            'tasks' => $tasks,        // 追加
-        ]);                                 // 追加
+
+public function index()
+{
+    // 認証済みユーザーのチェック
+    if (\Auth::check()) {
+        // 現在のユーザーのタスクのみを取得
+        $tasks = Task::where('user_id', auth()->id())->get();
+
+
+        return view('tasks.index', [
+            'tasks' => $tasks,
+        ]);
     }
-    
 
+    return view('welcome');
+}
     /**
      * Show the form for creating a new resource.
      */
@@ -28,94 +33,104 @@ class TasksController extends Controller
     {
         $task = new Task;
 
-        // メッセージ作成ビューを表示
         return view('tasks.create', [
-            'task' => $task
+            'task' => $task,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        // バリデーション
-        $request->validate([
-            'status' => 'required|max:10',   // 追加
-            'content' => 'required|max:255',
-        ]);
+public function store(Request $request)
+{
 
-        // メッセージを作成
-        $task = new Task;
-        $task->status = $request->status;    // 追加
-        $task->content = $request->content;
-        $task->save();
+    $request->validate([
+        'status' => 'required|max:10',
+        'content' => 'required|max:255',
+    ]);
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
+
+    $task = new Task;
+
+    $task->status = $request->input('status'); // ステータスを設定
+    $task->content = $request->input('content'); // タスク内容を設定
+
+    // 現在のユーザーのIDを設定
+    if (auth()->check()) {
+        $task->user_id = auth()->id(); // ユーザーが認証されている場合、ユーザーIDを設定
+    } else {
+        // エラーハンドリング: 未認証の場合
+        return redirect()->back()->withErrors(['user' => 'User must be logged in']);
     }
+
+    $task->save();
+
+    return redirect('/');
+}
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        $task = Task::findOrFail($id);
+public function show(string $id)
+{
+    $task = Task::where('id', $id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail(); 
 
-        // メッセージ詳細ビューでそれを表示
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
-    }
+    return view('tasks.show', [
+        'task' => $task,
+    ]);
+}
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        // idの値でメッセージを検索して取得
-        $task = Task::findOrFail($id);
+public function edit(string $id)
+{
 
-        // メッセージ編集ビューでそれを表示
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
-    }
+    $task = Task::where('id', $id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail(); 
+
+    return view('tasks.edit', [
+        'task' => $task,
+    ]);
+}
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        // バリデーション
-        $request->validate([
-            'status' => 'required|max:10',   // 追加
-            'content' => 'required|max:255',
-        ]);
 
-        // idの値でメッセージを検索して取得
-        $task = Task::findOrFail($id);
-        // メッセージを更
-        $task->status = $request->status;    // 追加
-        $task->content = $request->content;
-        $task->save();
+public function update(Request $request, string $id)
+{
+    $request->validate([
+        'status' => 'required|max:10', 
+        'content' => 'required|max:255', 
+    ]);
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
-    }
+    $task = Task::where('id', $id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail(); 
+
+    $task->status = $request->status;
+    $task->content = $request->content;
+    $task->save();
+
+    return redirect('/');
+}
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        // idの値でメッセージを検索して取得
-        $task = Task::findOrFail($id);
-        // メッセージを削除
-        $task->delete();
+public function destroy(string $id)
+{
 
-        // トップページへリダイレクトさせる
-        return redirect('/');
+    $task = Task::where('id', $id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail(); // ユーザーが所有するタスクのみを取得
 
-    }
+
+    $task->delete();
+    return redirect('/');
+}
 }

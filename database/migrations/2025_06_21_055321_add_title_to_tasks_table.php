@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->string('status',10);
+            // statusカラムが存在しない場合のみ追加する
+            if (!Schema::hasColumn('tasks', 'status')) {
+                $table->string('status', 10)->default('pending'); // statusカラム追加
+            }
         });
     }
 
@@ -22,7 +25,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('status');
+            // statusカラムが存在する場合のみ削除
+            if (Schema::hasColumn('tasks', 'status')) {
+                $table->dropColumn('status');
+            }
         });
     }
 };

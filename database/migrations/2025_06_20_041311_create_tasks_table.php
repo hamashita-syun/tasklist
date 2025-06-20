@@ -13,9 +13,16 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();            
+            $table->unsignedBigInteger('user_id');
             $table->string('content');    // contentカラム追加
 
+            // statusカラムを追加する。すでに存在する場合はエラーを防ぐ。
+            if (!Schema::hasColumn('tasks', 'status')) {
+                $table->string('status')->default('pending'); // statusカラム追加
+            }
+
+            $table->timestamps();            
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

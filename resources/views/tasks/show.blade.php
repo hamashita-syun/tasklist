@@ -1,3 +1,5 @@
+@extends('layouts.app')
+
 @section('content')
     <div class="prose ml-4">
         <h2>id = {{ $task->id }} のタスク詳細ページ</h2>
@@ -7,6 +9,11 @@
         <tr>
             <th>id</th>
             <td>{{ $task->id }}</td>
+        </tr>
+
+        <tr>
+            <th>ユーザーID</th> <!-- ユーザーIDの行を追加 -->
+            <td>{{ $task->user_id }}</td>
         </tr>
 
         <tr>
@@ -20,7 +27,6 @@
         </tr>
     </table>
 
-
     {{-- メッセージ編集ページへのリンク --}}
     <a class="btn btn-outline" href="{{ route('tasks.edit', $task->id) }}">このタスクを編集</a>
 
@@ -31,8 +37,4 @@
         <button type="submit" class="btn btn-error btn-outline" 
             onclick="return confirm('id = {{ $task->id }} のタスクを削除します。よろしいですか？')">削除</button>
     </form>
-    </table>
-
-    {{-- メッセージ編集ページへのリンク --}}
-    <a class="btn btn-outline" href="{{ route('tasks.edit', $task->id) }}">このタスクを編集</a
 @endsection
